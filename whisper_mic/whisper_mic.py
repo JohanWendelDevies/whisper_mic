@@ -24,7 +24,7 @@ from whisper_mic.utils import get_logger
 # asound = cdll.LoadLibrary('libasound.so')
 # asound.snd_lib_error_set_handler(c_error_handler)
 class WhisperMic:
-    def __init__(self,model="base",device=("cuda" if torch.cuda.is_available() else "cpu"),english=False,verbose=False,energy=300,pause=2,dynamic_energy=False,save_file=False, model_root="~/.cache/whisper",mic_index=None,implementation="whisper",hallucinate_threshold=300):
+    def __init__(self,model="base",device=("cuda" if torch.cuda.is_available() else "cpu"),english=False,verbose=False,energy=None,pause=None,dynamic_energy=None,save_file=False, model_root="~/.cache/whisper",mic_index=None,implementation="whisper",hallucinate_threshold=300):
 
         self.logger = get_logger("whisper_mic", "info")
         self.energy = energy
@@ -87,9 +87,12 @@ class WhisperMic:
         self.source = sr.Microphone(sample_rate=16000, device_index=mic_index)
 
         self.recorder = sr.Recognizer()
-        self.recorder.energy_threshold = self.energy
-        self.recorder.pause_threshold = self.pause
-        self.recorder.dynamic_energy_threshold = self.dynamic_energy
+        if self.energy is not None:
+            self.recorder.energy_threshold = self.energy
+        if self.pause is not None:
+            self.recorder.pause_threshold = self.pause
+        if self.dynamic_energy is not None:
+            self.recorder.dynamic_energy_threshold = self.dynamic_energy
 
         with self.source:
             self.recorder.adjust_for_ambient_noise(self.source)
